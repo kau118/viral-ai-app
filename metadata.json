@@ -1,0 +1,6 @@
+{
+  "name": "VIRAL.AI",
+  "description": "High-octane AI growth tools to engineer content that triggers viral loops, optimizes hooks, analyzes trends, and provides competitor intelligence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
