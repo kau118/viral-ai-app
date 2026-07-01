@@ -56,7 +56,12 @@ app.post("/api/generate-all", async (req, res) => {
     }
 
     const ai = getGenAI();
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Fallback chain for models
+    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
+    let lastError: any = null;
+    let success = false;
+    let data = null;
 
     const prompt = `Generate a complete viral content package for: "${topic}" (Vibe: ${vibe || "Professional"}).
     Format response as JSON:
@@ -67,15 +72,30 @@ app.post("/api/generate-all", async (req, res) => {
       "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
     }`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    let text = response.text();
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`Trying model: ${modelName}`);
+        const model = ai.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let text = response.text();
+        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+        data = JSON.parse(text);
+        success = true;
+        console.log(`Success with model: ${modelName}`);
+        break;
+      } catch (e: any) {
+        console.error(`Failed with model ${modelName}:`, e.message);
+        lastError = e;
+      }
+    }
 
-    // Clean JSON from potential markdown formatting
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+    if (success && data) {
+      res.json(data);
+    } else {
+      throw lastError || new Error("All models failed");
+    }
 
-    const data = JSON.parse(text);
-    res.json(data);
   } catch (error: any) {
     console.error("AI Error:", error);
     res.status(500).json({

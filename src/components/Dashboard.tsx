@@ -17,7 +17,10 @@ export default function Dashboard() {
     const checkConnection = async () => {
       console.log("Checking backend: " + API_BASE);
       try {
-        const res = await fetch(`${API_BASE}/api/health`);
+        const res = await fetch(`${API_BASE}/api/health`, {
+          mode: 'cors',
+          headers: { 'Accept': 'application/json' }
+        });
         if (res.ok) {
           console.log("Backend Online");
           setBackendStatus("online");
@@ -27,9 +30,9 @@ export default function Dashboard() {
           setErrorMessage(`HTTP ${res.status}`);
         }
       } catch (e: any) {
-        console.error("Backend offline or sleep");
+        console.error("Connection failed", e);
         setBackendStatus("offline");
-        setErrorMessage(e.message || "Network Error");
+        setErrorMessage("Network Fail");
       }
     };
 
