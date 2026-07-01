@@ -8,7 +8,15 @@ import { GoogleGenAI, Type } from "@google/genai";
 dotenv.config();
 
 const app = express();
-app.use(cors()); // Enable CORS for mobile app access
+
+// Very permissive CORS for mobile WebViews
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  credentials: true
+}));
+
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
@@ -38,6 +46,16 @@ function getAIClient(): GoogleGenAI {
 app.get("/api/health", (req, res) => {
   const hasKey = !!process.env.GEMINI_API_KEY;
   res.json({ status: "ok", geminiKeyAvailable: hasKey });
+});
+
+// LOGIN ENDPOINT (Verification placeholder)
+app.post("/api/login", (req, res) => {
+  const { email, password } = req.body;
+  if (email && password) {
+    res.json({ status: "success", user: { email, id: "vai_user_1" } });
+  } else {
+    res.status(400).json({ error: "Email and password required" });
+  }
 });
 
 // 1. SMART CAPTION GENERATOR ENDPOINT
@@ -427,7 +445,11 @@ Return the response in JSON format matching the schema:
     res.json(data);
   } catch (error: any) {
     console.error("Generate All Error:", error);
-    res.status(500).json({ error: error.message || "Failed to generate package." });
+    res.status(500).json({
+      error: "Failed to generate package.",
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

@@ -14,6 +14,7 @@ import {
   Gauge,
   History
 } from "lucide-react";
+import { API_BASE } from "../constants";
 
 export default function Tools() {
   // Smart Caption Generator State
@@ -58,7 +59,7 @@ export default function Tools() {
     const inputTopic = captionTopic.trim() || "AI-powered productivity for developers";
     setIsGeneratingCaption(true);
     try {
-      const res = await fetch("/api/generate-caption", {
+      const res = await fetch(`${API_BASE}/api/generate-caption`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ topic: inputTopic, tone: activeTone }),
@@ -81,7 +82,7 @@ export default function Tools() {
     const inputHook = draftHook.trim() || "I found a cool way to grow on Twitter...";
     setIsOptimizing(true);
     try {
-      const res = await fetch("/api/optimize-hook", {
+      const res = await fetch(`${API_BASE}/api/optimize-hook`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draftHook: inputHook }),

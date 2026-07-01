@@ -1,27 +1,50 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { TrendingUp, Users, Zap, Clock, ChevronRight, Activity, Cpu, Search } from "lucide-react";
+import { API_BASE } from "../constants";
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [aiStatus, setAiStatus] = useState("Initializing...");
   const [viralScore, setViralScore] = useState(0);
   const [backendStatus, setBackendStatus] = useState<"connecting" | "online" | "offline">("connecting");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    let intervalId: any;
+
     // Check Backend Connection
     const checkConnection = async () => {
+      console.log("Checking backend: " + API_BASE);
       try {
-        const API_BASE = "https://paavani-ai-backend.onrender.com"; // Default production URL
         const res = await fetch(`${API_BASE}/api/health`);
-        if (res.ok) setBackendStatus("online");
-        else setBackendStatus("offline");
-      } catch (e) {
+        if (res.ok) {
+          console.log("Backend Online");
+          setBackendStatus("online");
+          setErrorMessage(null);
+        } else {
+          setBackendStatus("offline");
+          setErrorMessage(`HTTP ${res.status}`);
+        }
+      } catch (e: any) {
+        console.error("Backend offline or sleep");
         setBackendStatus("offline");
+        setErrorMessage(e.message || "Network Error");
       }
     };
 
     checkConnection();
+
+    // Retry every 8 seconds if not online (Render free tier wakes up slowly)
+    intervalId = setInterval(() => {
+      setBackendStatus(prev => {
+        if (prev !== "online") {
+          checkConnection();
+          return "connecting";
+        }
+        return prev;
+      });
+    }, 8000);
 
     // Simulate real-time initialization
     const timer = setTimeout(() => {
@@ -29,7 +52,11 @@ export default function Dashboard() {
       setAiStatus("🟢 AI Active");
       animateScore(88);
     }, 1200);
-    return () => clearTimeout(timer);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(intervalId);
+    };
   }, []);
 
   const animateScore = (target: number) => {
@@ -68,6 +95,9 @@ export default function Dashboard() {
                  {backendStatus === 'online' ? 'SYSTEM ONLINE' : backendStatus === 'connecting' ? 'SYNCING...' : 'SYSTEM OFFLINE'}
                </span>
             </div>
+            {errorMessage && backendStatus === 'offline' && (
+              <span className="text-[8px] font-mono text-red-400 mt-0.5">{errorMessage}</span>
+            )}
             <span className="font-mono text-[8px] font-black text-white/20 tracking-[0.2em] uppercase mt-0.5">
               {aiStatus}
             </span>

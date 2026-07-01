@@ -16,6 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import { CreateSubTab } from "../types";
+import { API_BASE } from "../constants";
 
 interface GeneratedContent {
   hook: string;
@@ -60,7 +61,6 @@ export default function Create() {
     setResult(null);
 
     try {
-      const API_BASE = "https://paavani-ai-backend.onrender.com";
       const response = await fetch(`${API_BASE}/api/generate-all`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -30,7 +30,12 @@ var import_vite = require("vite");
 var import_genai = require("@google/genai");
 import_dotenv.default.config();
 var app = (0, import_express.default)();
-app.use((0, import_cors.default)());
+app.use((0, import_cors.default)({
+  origin: "*",
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+  credentials: true
+}));
 app.use(import_express.default.json());
 var PORT = process.env.PORT || 3e3;
 var aiClient = null;
