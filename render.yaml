@@ -4,11 +4,11 @@ services:
     env: node
     plan: free
     buildCommand: npm install && npm run build
-    startCommand: npm start
+    startCommand: node dist/server.cjs
     envVars:
       - key: NODE_ENV
         value: production
       - key: GEMINI_API_KEY
-        sync: false # Set this in the Render dashboard
+        sync: false
       - key: PORT
         value: 3000
