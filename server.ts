@@ -56,7 +56,7 @@ app.post("/api/generate-all", async (req, res) => {
     }
 
     const ai = getGenAI();
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = ai.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `Generate a complete viral content package for: "${topic}" (Vibe: ${vibe || "Professional"}).
     Format response as JSON:
