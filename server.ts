@@ -50,8 +50,8 @@ app.post("/api/generate-all", async (req, res) => {
       "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
     }`;
 
-    // Directly calling REST API v1 (more stable than v1beta in some regions)
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    // Directly calling REST API v1
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${apiKey}`;
 
     const response = await fetch(url, {
       method: "POST",
