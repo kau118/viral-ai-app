@@ -3,7 +3,6 @@ import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 dotenv.config();
 
@@ -19,20 +18,6 @@ app.use(cors({
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
-
-// Initialize Gemini AI
-let genAI: GoogleGenerativeAI | null = null;
-
-function getGenAI(): GoogleGenerativeAI {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not configured.");
-    }
-    genAI = new GoogleGenerativeAI(apiKey);
-  }
-  return genAI;
-}
 
 app.get("/api/health", (req, res) => {
   const hasKey = !!process.env.GEMINI_API_KEY;
@@ -51,20 +36,13 @@ app.post("/api/login", (req, res) => {
 app.post("/api/generate-all", async (req, res) => {
   try {
     const { topic, vibe } = req.body;
-    if (!topic) {
-      return res.status(400).json({ error: "Topic is required." });
-    }
+    const apiKey = process.env.GEMINI_API_KEY;
 
-    const ai = getGenAI();
+    if (!topic) return res.status(400).json({ error: "Topic is required." });
+    if (!apiKey) return res.status(500).json({ error: "API Key missing." });
 
-    // Fallback chain for models
-    const modelsToTry = ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-1.0-pro", "gemini-pro"];
-    let lastError: any = null;
-    let success = false;
-    let data = null;
-
-    const prompt = `Generate a complete viral content package for: "${topic}" (Vibe: ${vibe || "Professional"}).
-    Format response as JSON:
+    const prompt = `Generate a complete viral social media content package for: "${topic}" (Vibe: ${vibe || "Professional"}).
+    Format response as valid JSON:
     {
       "hook": "Killer opening line",
       "caption": "Engaging caption with emojis",
@@ -72,32 +50,32 @@ app.post("/api/generate-all", async (req, res) => {
       "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"]
     }`;
 
-    for (const modelName of modelsToTry) {
-      try {
-        console.log(`Trying model: ${modelName}`);
-        const model = ai.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        let text = response.text();
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        data = JSON.parse(text);
-        success = true;
-        console.log(`Success with model: ${modelName}`);
-        break;
-      } catch (e: any) {
-        console.error(`Failed with model ${modelName}:`, e.message);
-        lastError = e;
-      }
+    // Directly calling REST API v1 (more stable than v1beta in some regions)
+    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+
+    const result: any = await response.json();
+
+    if (!response.ok) {
+      console.error("Gemini API Error:", result);
+      throw new Error(result.error?.message || "Gemini API failure");
     }
 
-    if (success && data) {
-      res.json(data);
-    } else {
-      throw lastError || new Error("All models failed");
-    }
+    let text = result.candidates[0].content.parts[0].text;
+    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+
+    const data = JSON.parse(text);
+    res.json(data);
 
   } catch (error: any) {
-    console.error("AI Error:", error);
+    console.error("AI Error:", error.message);
     res.status(500).json({
       error: "AI Generation Failed",
       details: error.message
