@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 3000;
 
 app.get("/api/health", (req, res) => {
   const hasKey = !!process.env.GEMINI_API_KEY;
-  res.json({ status: "ok", geminiKeyAvailable: hasKey });
+  res.json({ status: "ok", geminiKeyAvailable: hasKey, version: "1.0.1" });
 });
 
 app.post("/api/login", (req, res) => {
