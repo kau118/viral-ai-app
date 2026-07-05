@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "752608269203",
+    "project_id": "viralaipuneet",
+    "storage_bucket": "viralaipuneet.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:752608269203:android:988c1e4a528044f9988e66",
+        "android_client_info": {
+          "package_name": "com.viral.ai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBEqmqOLzYOSk9ocYY0ZPNUHL0BZR7m9Sw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
